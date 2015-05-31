@@ -1,22 +1,15 @@
 var https = require('https');
 var querystring = require('querystring');
-var Q = require('Q');
-
-var responseToken = function(data) {
-    data.setEncoding('utf8');
-
-    data.on('data', function (chunk) {
-        return chunk;
-    });
-};
+var Q = require('q');
 
 var getTokens = function(item, http) {
     console.log('Get Token for API:', item.apiName);
     var token, headers, postRequest;
+    var deferred = Q.defer();
     var dataString = querystring.stringify(item.authenticateParams);
     var optionsRequest = item.authenticateRules;
 
-    if (optionsRequest.method.toLowerCase() === 'post'){
+    if (optionsRequest.method.toLowerCase() === 'post') {
         headers = {
             "Content-Type" : "application/x-www-form-urlencoded",
             "Content-Length" : Buffer.byteLength(dataString)
@@ -31,10 +24,22 @@ var getTokens = function(item, http) {
         https.get(tokenURL, responseToken);
     } else {
 
-        postRequest = https.request(optionsRequest, responseToken);
+        postRequest = https.request(optionsRequest, function(data) {
+            data.setEncoding('utf8');
+
+            data.on('data', function (chunk) {
+                item.token = chunk;
+                deferred.resolve(item);
+            }).on('error', function(){
+                deferred.reject(new Error('Stack ' + chunk));
+            });
+        });
+
         postRequest.write(dataString);
         process.nextTick(function(){ postRequest.end(); });
     }
+
+    return deferred.promise;
 };
 
 module.exports = getTokens;

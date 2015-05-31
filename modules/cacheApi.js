@@ -1,12 +1,13 @@
-﻿var timer = require('timers');
+﻿var emmitter = require('events').EventEmitter;
 
 var cacheList = {
-    objs : [],
+    _objs : [],
+    _timeouts : [],
     getCached : function(apiName) {
         var data;
 
-        for (var i = 0; i <  this.objs.length; i++) {
-            var cachedData = this.objs[i];
+        for (var i = 0; i <  this._objs.length; i++) {
+            var cachedData = this._objs[i];
             if (cachedData && cachedData.name === apiName.toLowerCase) {
                 data = cachedData;
             }
@@ -14,10 +15,24 @@ var cacheList = {
 
         return data;
     },
-    setCache : function(apiObj) {
-        this.objs.push(apiObj);
+    setCache : function(apiObj, time) {
+        this._objs.push(apiObj);
+        this._setCacheTimer(apiObj.apiName, time);
     },
-    setCacheTimer : function(key, time) {
+    _setCacheTimer : function(key, time) {
+        var listObjs = this._objs;
 
+        var _timeouts[''+key] = setTimeout(function() {
+            for (var i = 0; i < listObjs.length; i++) {
+                if (listObjs[i].name === key) {
+                    listObjs.token = '';
+                    emitter.emit('clearTimer', key);
+                }
+            }
+        }, time);
+
+        emitter.addListener('clearTimer', function(key) {
+            clearTimeout(_timeouts[key]);
+        };
     }
 };
