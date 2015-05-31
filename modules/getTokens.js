@@ -1,42 +1,40 @@
+var https = require('https');
 var querystring = require('querystring');
 var Q = require('Q');
 
-var getTokens = function(item, http, deferred) {
+var responseToken = function(data) {
+    data.setEncoding('utf8');
+
+    data.on('data', function (chunk) {
+        return chunk;
+    });
+};
+
+var getTokens = function(item, http) {
     console.log('Get Token for API:', item.apiName);
-
-    var token, headers;
-    var postData = querystring.stringify(item.authenticateParams);
+    var token, headers, postRequest;
+    var dataString = querystring.stringify(item.authenticateParams);
     var optionsRequest = item.authenticateRules;
-    optionsRequest.port = 80;
 
-    if (item.authenticateRules.method.toLowerCase() === 'post'){
+    if (optionsRequest.method.toLowerCase() === 'post'){
         headers = {
             "Content-Type" : "application/x-www-form-urlencoded",
-            "Content-Length" : Buffer.byteLength(postData)
+            "Content-Length" : Buffer.byteLength(dataString)
         };
-    } else {
-        headers = ''
     }
 
     optionsRequest.headers = headers;
 
-    var postRequest = Q.nfcall(http.request, [optionsRequest] );
-console.log(postRequest);
-    // var postRequest = http.request(optionsRequest, function(resp){
-    //     resp.setEncoding('utf8');
+    if (optionsRequest.method.toLowerCase() === 'get')  {
 
-    //     resp.on('data', function (chunk) {
-    //         deferred.resolve();
-    //         console.log('Response: ' + chunk);
-    //     });
-    // });
+        var tokenURL = optionsRequest.hostname + '?' + dataString;
+        https.get(tokenURL, responseToken);
+    } else {
 
-//console.log(deferred);
-
-    postRequest.write(postData);
-    postRequest.end();
-
-    return deferred.promisse;
+        postRequest = https.request(optionsRequest, responseToken);
+        postRequest.write(dataString);
+        process.nextTick(function(){ postRequest.end(); });
+    }
 };
 
 module.exports = getTokens;

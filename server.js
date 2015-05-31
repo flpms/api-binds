@@ -3,17 +3,15 @@ var cacheManager = require('cache-manager');
 var Q = require('q');
 var getApiTokens = require('./modules/getTokens.js');
 var apiList = require('./data/api-list.json');
+var env = '';
+
 
 http.createServer(function (req, res) {
     console.log('Request Start');
-    var promissesListResult  = [] ;
+    var promissesListResult  = [];
 
     apiList.forEach(function(item) {
-        var deferred = Q.defer();
-
-        var result = getApiTokens(item, http, deferred);
-
-        console.log(result);
+        var result = getApiTokens(item, http);
     });
 
     console.log('Request End');
