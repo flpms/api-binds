@@ -3,9 +3,9 @@
 var cacheList = {
     _objs : [],
     _timeouts : [],
-    getCached : function(apiName) {
+    getCachedItem : function(apiName) {
         var data;
-
+console.log('linha 8:', apiName);
         for (var i = 0; i <  this._objs.length; i++) {
             var cachedData = this._objs[i];
             if (cachedData && cachedData.name === apiName.toLowerCase) {
@@ -16,13 +16,18 @@ var cacheList = {
         return data;
     },
     setCache : function(apiObj, time) {
-        this._objs.push(apiObj);
-        this._setCacheTimer(apiObj.apiName, time);
+        try {
+            console.log('Linha 25', this);
+            this._objs.push(apiObj);
+            this._setCacheTimer(apiObj.apiName, time);
+        } catch (e){
+            console.log(new Error(e));
+        }
     },
     _setCacheTimer : function(key, time) {
         var listObjs = this._objs;
 
-        var _timeouts[''+key] = setTimeout(function() {
+        _timeouts[key] = setTimeout(function() {
             for (var i = 0; i < listObjs.length; i++) {
                 if (listObjs[i].name === key) {
                     listObjs.token = '';
@@ -33,6 +38,8 @@ var cacheList = {
 
         emitter.addListener('clearTimer', function(key) {
             clearTimeout(_timeouts[key]);
-        };
+        });
     }
 };
+
+module.exports = cacheList;
