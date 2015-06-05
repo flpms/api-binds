@@ -2,7 +2,7 @@ var http = require('http');
 //var cacheManager = require('cache-manager');
 var Q = require('q');
 var cache = require('./modules/cacheApi.js');
-var getApiTokens = require('./modules/getTokens.js');
+var getApiTokens = require('./services/Tokens.js');
 var apiList = require('./data/api-list.json');
 var env = '';
 

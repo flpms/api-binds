@@ -2,7 +2,7 @@ var https = require('https');
 var querystring = require('querystring');
 var Q = require('q');
 
-var getTokens = function(item, http) {
+var Token = function(item, http) {
     console.log('Get Token for API:', item.apiName);
     var token, headers, postRequest;
     var deferred = Q.defer();
@@ -18,12 +18,19 @@ var getTokens = function(item, http) {
 
     optionsRequest.headers = headers;
 
-    if (optionsRequest.method.toLowerCase() === 'get')  {
+    var get = function() {
+        var tokenURL = this.optionsRequest.hostname + '?' + this.dataString;
+        https.get(tokenURL, responseToken, function(res){
+            res.on('data', function(item) {
+                deferred.resolve(item);
+            });
+        }).on('error', function(e) {
+             deferred.reject(new Error('Stack ' + e));
+        });
+        return deferred.promise
+    };
 
-        var tokenURL = optionsRequest.hostname + '?' + dataString;
-        https.get(tokenURL, responseToken);
-    } else {
-
+    var post = function(){
         postRequest = https.request(optionsRequest, function(data) {
             data.setEncoding('utf8');
 
@@ -37,9 +44,10 @@ var getTokens = function(item, http) {
 
         postRequest.write(dataString);
         process.nextTick(function(){ postRequest.end(); });
-    }
+        return deferred.promise;
+    };
 
-    return deferred.promise;
+    return this;
 };
 
-module.exports = getTokens;
+module.exports = Token;
