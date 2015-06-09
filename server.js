@@ -5,16 +5,18 @@ var cache = require('./modules/cacheApi.js');
 var getApiTokens = require('./services/Tokens.js');
 var apiList = require('./data/api-list.json');
 var env = '';
+var promissesListResult  = [];
+
+env.apiItens = [];
+
+apiList.forEach(function(item) {
+    var token = new Token(item, http);
+    promissesListResult.push(token.post());
+});
+
 
 http.createServer(function (req, res) {
     console.log('Request Start');
-    
-    var promissesListResult  = [];
-
-    apiList.forEach(function(item) {
-        var token = getApiTokens(item, http);
-        promissesListResult.push(token);
-    });
 
     Q.all(promissesListResult).done(function(result) {
         cache.setCache();
