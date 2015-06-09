@@ -11,7 +11,7 @@ var data = {
         },
         "authenticateParams" : {
             "client_id" : "monitoring-reviews",
-            "client_secret" : "mDdRQOEXcVTfX80X8X0H0ct3NXs~",
+            "client_secret" : "",
             "grant_type" : "client_credentials",
             "scope": "read"
         },
